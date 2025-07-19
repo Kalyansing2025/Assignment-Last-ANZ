@@ -4,7 +4,7 @@
   "license": "MIT",
   "angular-cli": {},
   "scripts": {
-    "ng": "ng",
+    "ng": "nswag run angular/nswag/service.config.nswag",
     "publish": "gulp build && ng build --configuration production",
     "publish-k8s": "gulp build && ng build --configuration k8s --verbose",
     "start": "ng serve --host 0.0.0.0 --port 4200",

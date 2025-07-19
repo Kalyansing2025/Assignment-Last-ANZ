@@ -1,0 +1,131 @@
+<div [@routerTransition]>
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-6">
+          <h1>{{ l("Customers") }}</h1>
+          <p class="text-muted">{{ l("ManageCustomerAndCustomerUser") }}</p>
+        </div>
+        <div class="col-6 text-right">
+          <button type="button" class="btn btn-primary" (click)="createCustomer()">
+            <i class="fa fa-plus"></i>
+            {{ l("CreateNewCustomer") }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="content">
+    <div class="container-fluid">
+      <div class="card">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-md-6">
+              <h3 class="card-title">{{ l("AllCustomers") }}</h3>
+            </div>
+            <div class="col-md-6">
+              <div class="input-group">
+                <input type="text" 
+                       class="form-control" 
+                       name="keyword" 
+                       [placeholder]="l('SearchByNameEmailAddress')"
+                       [(ngModel)]="keyword" 
+                       (keyup.enter)="getCustomers()">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-secondary" type="button" (click)="getCustomers()">
+                    <i class="fa fa-search"></i>
+                  </button>
+                  <button class="btn btn-outline-secondary" type="button" (click)="clearFilters()">
+                    <i class="fa fa-refresh"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th style="width: 25%">{{ l("CustomerName") }}</th>
+                  <th style="width: 25%">{{ l("Email") }}</th>
+                  <th style="width: 25%">{{ l("Address") }}</th>
+                  <th style="width: 15%">{{ l("RegistrationDate") }}</th>
+                  <th style="width: 10%" class="text-center">{{ l("Actions") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of customers">
+                  <td>
+                    <strong>{{ customer.customerName }}</strong>
+                  </td>
+                  <td>{{ customer.emailId }}</td>
+                  <td>{{ customer.address || '-' }}</td>
+                  <td>{{ customer.registrationDate | date:'short' }}</td>
+                  <td class="text-center">
+                    <div class="btn-group" dropdown>
+                      <button class="btn btn-sm btn-primary dropdown-toggle" 
+                              dropdownToggle 
+                              aria-haspopup="true" 
+                              aria-expanded="false">
+                        <i class="fa fa-cog"></i>
+                        {{ l("Actions") }}
+                      </button>
+                      <div class="dropdown-menu" *dropdownMenu>
+                        <a class="dropdown-item" 
+                           href="javascript:;" 
+                           (click)="viewUsers(customer)">
+                          <i class="fa fa-users text-info"></i>
+                          {{ l("ViewUsers") }}
+                        </a>
+                        <a class="dropdown-item" 
+                           href="javascript:;" 
+                           (click)="editCustomer(customer)">
+                          <i class="fa fa-edit text-primary"></i>
+                          {{ l("Edit") }}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" 
+                           href="javascript:;" 
+                           (click)="delete(customer)">
+                          <i class="fa fa-trash text-danger"></i>
+                          {{ l("Delete") }}
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="customers.length === 0">
+                  <td colspan="5" class="text-center text-muted">
+                    <i class="fa fa-info-circle"></i>
+                    {{ l("NoDataAvailable") }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="primeng-paging-container">
+            <p-paginator
+              [rows]="pageSize"
+              #paginator
+              (onPageChange)="getDataPage($event)"
+              [totalRecords]="totalItems"
+              [rowsPerPageOptions]="[10, 25, 50, 100]"
+              [showCurrentPageReport]="true"
+              [currentPageReportTemplate]="'TotalRecordsCount' | localize: totalItems"
+            ></p-paginator>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modals -->
+  <createEditCustomerModal #createEditCustomerModal (onSave)="getCustomers()"></createEditCustomerModal>
+  <viewUsersModal #viewUsersModal></viewUsersModal>
+</div>

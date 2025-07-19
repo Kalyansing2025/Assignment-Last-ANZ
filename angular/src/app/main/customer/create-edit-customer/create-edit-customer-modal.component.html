@@ -1,0 +1,190 @@
+<div bsModal #createOrEditModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="createOrEditModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form *ngIf="active" #customerForm="ngForm" novalidate (ngSubmit)="save()">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <span *ngIf="!id">{{ l("CreateNewCustomer") }}</span>
+            <span *ngIf="id">{{ l("EditCustomer") }}</span>
+          </h4>
+          <button type="button" class="close" (click)="close()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- Customer Name -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="customerName">{{ l("CustomerName") }} <span class="text-danger">*</span></label>
+                <input 
+                  type="text" 
+                  id="customerName"
+                  class="form-control" 
+                  name="customerName" 
+                  [(ngModel)]="customer.customerName" 
+                  required 
+                  maxlength="256"
+                  #customerNameModel="ngModel"
+                  [class.is-invalid]="customerNameModel.invalid && customerNameModel.touched"
+                  placeholder="{{ l('EnterCustomerName') }}">
+                <div class="invalid-feedback" *ngIf="customerNameModel.invalid && customerNameModel.touched">
+                  <span *ngIf="customerNameModel.errors?.required">{{ l("ThisFieldIsRequired") }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Email -->
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="emailId">{{ l("Email") }} <span class="text-danger">*</span></label>
+                <input 
+                  type="email" 
+                  id="emailId"
+                  class="form-control" 
+                  name="emailId" 
+                  [(ngModel)]="customer.emailId" 
+                  required 
+                  email
+                  maxlength="256"
+                  #emailModel="ngModel"
+                  [class.is-invalid]="emailModel.invalid && emailModel.touched"
+                  placeholder="{{ l('EnterEmailAddress') }}">
+                <div class="invalid-feedback" *ngIf="emailModel.invalid && emailModel.touched">
+                  <span *ngIf="emailModel.errors?.required">{{ l("ThisFieldIsRequired") }}</span>
+                  <span *ngIf="emailModel.errors?.email">{{ l("InvalidEmailAddress") }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Registration Date with Calendar Picker -->
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="registrationDate">{{ l("RegistrationDate") }}</label>
+                <div class="input-group">
+                  <input 
+                    type="text"
+                    id="registrationDate"
+                    class="form-control" 
+                    name="registrationDate" 
+                    [(ngModel)]="customer.registrationDate"
+                    bsDatepicker
+                    #dp="bsDatepicker"
+                    [bsConfig]="datePickerConfig"
+                    placeholder="{{ l('SelectDate') }}"
+                    readonly>
+                  <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="button" (click)="dp.toggle()" [attr.aria-label]="l('OpenCalendar')">
+                      <i class="fa fa-calendar"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Address -->
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="address">{{ l("Address") }}</label>
+                <input 
+                  type="text" 
+                  id="address"
+                  class="form-control" 
+                  name="address" 
+                  [(ngModel)]="customer.address" 
+                  maxlength="500"
+                  placeholder="{{ l('EnterAddress') }}">
+              </div>
+            </div>
+          </div>
+
+          <!-- Users Multi-Select -->
+          <div class="row">
+            <div class="col-12">
+              <div class="form-group">
+                <label>{{ l("AssignUsers") }}</label>
+                <p class="text-muted small">{{ l("SelectUsersToAssignToCustomer") }}</p>
+                
+                <!-- Multi-select dropdown -->
+                <div class="dropdown" [class.show]="isDropdownOpen">
+                  <button class="btn btn-outline-secondary dropdown-toggle w-100 text-left" 
+                          type="button" 
+                          (click)="toggleDropdown()"
+                          [attr.aria-expanded]="isDropdownOpen">
+                    <span *ngIf="selectedUserIds.length === 0" class="text-muted">{{ l("SelectUsers") }}</span>
+                    <span *ngIf="selectedUserIds.length === 1">{{ getSelectedUserNames()[0] }}</span>
+                    <span *ngIf="selectedUserIds.length > 1">{{ selectedUserIds.length }} {{ l("UsersSelected") }}</span>
+                  </button>
+                  
+                  <div class="dropdown-menu w-100" [class.show]="isDropdownOpen" style="max-height: 200px; overflow-y: auto;">
+                    <div class="px-3 py-2">
+                      <input type="text" 
+                             class="form-control form-control-sm" 
+                             [(ngModel)]="userSearchText"
+                             name="userSearchText"
+                             [placeholder]="l('SearchUsers')"
+                             (click)="$event.stopPropagation()">
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    
+                    <div *ngFor="let user of getFilteredUsers()" class="dropdown-item-text">
+                      <div class="form-check">
+                        <input 
+                          type="checkbox" 
+                          class="form-check-input" 
+                          [id]="'user_' + user.id"
+                          [checked]="isUserSelected(user.id)"
+                          (change)="onUserSelectionChange(user.id, $event.target.checked)"
+                          (click)="$event.stopPropagation()">
+                        <label class="form-check-label" [for]="'user_' + user.id">
+                          {{ user.name }} {{ user.surname }} 
+                          <small class="text-muted">({{ user.emailAddress }})</small>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div *ngIf="getFilteredUsers().length === 0" class="dropdown-item-text text-muted text-center">
+                      {{ l("NoUsersAvailable") }}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Selected users display -->
+                <div class="mt-2" *ngIf="selectedUserIds.length > 0">
+                  <small class="text-muted">{{ l("SelectedUsers") }}:</small>
+                  <div class="mt-1">
+                    <span *ngFor="let userName of getSelectedUserNames()" 
+                          class="badge badge-secondary mr-1">
+                      {{ userName }}
+                      <button type="button" 
+                              class="btn btn-sm p-0 ml-1" 
+                              (click)="removeUser(userName)"
+                              style="border: none; background: none; color: white;">
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button [disabled]="saving" type="button" class="btn btn-secondary" (click)="close()">
+            {{ l("Cancel") }}
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="!customerForm.form.valid || saving" [buttonBusy]="saving">
+            <i class="fa fa-save"></i>
+            <span>{{ l("Save") }}</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

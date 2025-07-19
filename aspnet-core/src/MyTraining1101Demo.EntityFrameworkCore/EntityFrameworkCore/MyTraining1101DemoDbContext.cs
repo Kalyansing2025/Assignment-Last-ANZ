@@ -5,6 +5,7 @@ using MyTraining1101Demo.Authorization.Delegation;
 using MyTraining1101Demo.Authorization.Roles;
 using MyTraining1101Demo.Authorization.Users;
 using MyTraining1101Demo.Chat;
+using MyTraining1101Demo.Customers;
 using MyTraining1101Demo.Editions;
 using MyTraining1101Demo.Friendships;
 using MyTraining1101Demo.MultiTenancy;
@@ -17,6 +18,9 @@ namespace MyTraining1101Demo.EntityFrameworkCore
     public class MyTraining1101DemoDbContext : AbpZeroDbContext<Tenant, Role, User, MyTraining1101DemoDbContext>, IAbpPersistedGrantDbContext
     {
         /* Define an IDbSet for each entity of the application */
+
+        public virtual DbSet<Customer> Customers { get; set; }
+        public virtual DbSet<CustomerUser> CustomerUsers { get; set; }
 
         public virtual DbSet<BinaryObject> BinaryObjects { get; set; }
 
